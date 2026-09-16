@@ -14,13 +14,19 @@ async function bootstrap(): Promise<void> {
   );
 
   const corsOrigin = process.env.CORS_ORIGIN;
+
   app.enableCors({
-    origin: corsOrigin && corsOrigin !== '*' ? corsOrigin.split(',') : '*',
+    origin:
+      corsOrigin && corsOrigin !== '*'
+        ? corsOrigin.split(',').map((origin) => origin.trim())
+        : '*',
   });
 
   const port = process.env.PORT ? Number(process.env.PORT) : 3000;
-  await app.listen(port);
-  console.log(`Backend running on http://localhost:${port}`);
+
+  await app.listen(port, '0.0.0.0');
+
+  console.log(`Backend running on port ${port}`);
 }
 
- bootstrap();
+bootstrap();
