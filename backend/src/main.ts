@@ -15,11 +15,10 @@ async function bootstrap(): Promise<void> {
 
   const corsOrigin = process.env.CORS_ORIGIN;
 
-  app.enableCors({
-    origin:
-      corsOrigin && corsOrigin !== '*'
-        ? corsOrigin.split(',').map((origin) => origin.trim())
-        : '*',
+   app.enableCors({
+    origin: corsOrigin
+      ? corsOrigin.split(',').map((origin) => origin.trim())
+      : false,
   });
 
   const port = process.env.PORT ? Number(process.env.PORT) : 3000;
