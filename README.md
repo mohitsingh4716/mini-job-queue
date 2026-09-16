@@ -183,3 +183,40 @@ never "check status, then update" as two separate steps.
 This was verified by firing 10 simultaneous `PENDING → RUNNING` requests at one
 job: exactly one returned `200`, the rest returned `400`/`409`.
 
+
+## Error Handling
+
+- `ValidationPipe` is global with `whitelist`, `forbidNonWhitelisted`, `transform`.
+- `BadRequestException` for invalid input / invalid transitions.
+- `NotFoundException` when a job does not exist.
+- `ConflictException` for concurrent/invalid state changes.
+- CORS is enabled so the deployed frontend can call the API.
+
+## Bonus: Health Check Endpoint
+
+`GET /health` returns a simple status payload. It was chosen because it is the
+smallest genuinely production-useful addition here: load balancers and platforms
+like Render/Railway/Fly use a health endpoint for readiness checks and uptime
+monitoring, with no added complexity.
+
+## Assumptions & Trade-offs
+
+- Jobs are not actually executed; "status" is managed manually via the API/UI,
+  matching the assignment scope (no real queue/worker, Redis, or WebSockets).
+- The frontend refetches the job list after each mutation. This keeps state
+  simple and always consistent with the server (important given the concurrency
+  rules) at the cost of an extra request; fine for this scale.
+- The frontend also hides invalid actions, but the server remains the source of
+  truth for transition validity.
+- No authentication, per the assignment.
+
+## Deployment
+
+- **Frontend URL:** _<add deployed frontend URL here>_
+- **Backend URL:** _<add deployed backend URL here>_
+
+## Screenshots
+
+### Dashboard
+
+![Job Queue Dashboard](/frontend/src/assets/dashboard.png)
