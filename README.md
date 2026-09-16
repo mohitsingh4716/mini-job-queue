@@ -13,12 +13,86 @@ simultaneous requests can never both perform the same transition.
 - REST API
 - `class-validator` / `class-transformer` for DTO validation
 
+**Frontend**
+- React (JavaScript) + Vite
+- Tailwind CSS (dark, Linear/Vercel-inspired design system)
+- Framer Motion for smooth transitions (list reorder/enter/exit, shared-layout
+  filter pill, count-up numbers)
+- Plain React hooks (no Redux)
+
+## Folder Structure
+
+```
+/
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma
+│   │   └── migrations/
+│   └── src/
+│       ├── jobs/
+│       │   ├── dto/
+│       │   │   ├── create-job.dto.ts
+│       │   │   └── update-job-status.dto.ts
+│       │   ├── jobs.controller.ts
+│       │   ├── jobs.service.ts
+│       │   └── jobs.module.ts
+│       ├── prisma/
+│       │   ├── prisma.service.ts
+│       │   └── prisma.module.ts
+│       ├── health.controller.ts
+│       ├── app.module.ts
+│       └── main.ts
+├── frontend/
+│   └── src/
+│       ├── components/
+│       │   ├── JobForm.jsx
+│       │   ├── JobList.jsx
+│       │   ├── StatusFilter.jsx
+│       │   ├── StatusCounts.jsx
+│       │   ├── JobListSkeleton.jsx  
+│       │   ├── AnimatedNumber.jsx    # count-up numbers
+│       │   └── icons.jsx             
+│       ├── services/
+│       │   └── jobService.js
+│       ├── statusConfig.js           # shared status colors + transition rules
+│       ├── App.jsx
+│       ├── main.jsx
+│       └── index.css
+├── README.md
+└── .gitignore
+```
+
+Data flow is intentionally simple and easy to explain:
+
+```
+React Components → jobService → NestJS Controller → JobsService → Prisma → PostgreSQL
+```
+
+## Setup
+
+### Prerequisites
+- Node.js 18+
+- A PostgreSQL database (Neon works out of the box)
+
+### 1. Backend
+
+```bash
+cd backend
+npm install
+cp .env.example .env        # then fill in DATABASE_URL
+npx prisma generate
+npx prisma migrate deploy   # apply `migrate dev` in development)
+npm run start:dev
+```
+
+Backend runs on `http://localhost:3000` by default.
+
+
 ### 2. Frontend
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env        # set VITE_API_URL to your backend URL
 npm run dev
 ```
 
@@ -55,6 +129,13 @@ npx prisma studio            # optional: browse data
 | `createdAt` | DateTime    | timestamp, defaults to now     |
 
 `JobStatus` enum: `PENDING`, `RUNNING`, `COMPLETED`, `FAILED`.
+
+**frontend/.env**
+
+| Variable       | Description                                    |
+| -------------- | ---------------------------------------------- |
+| `VITE_API_URL` | Base URL of the backend API (e.g. deployed URL)|
+
 
 ## API Endpoints
 
@@ -168,8 +249,8 @@ Concretely, the update is:
 
 ```ts
 await prisma.job.updateMany({
-  where: { id, status: expectedPreviousStatus }, // e.g. PENDING
-  data:  { status: newStatus },                  // e.g. RUNNING
+  where: { id, status: expectedPreviousStatus }, // PENDING
+  data:  { status: newStatus },                  // RUNNING
 });
 ```
 
@@ -212,8 +293,8 @@ monitoring, with no added complexity.
 
 ## Deployment
 
-- **Frontend URL:** _<add deployed frontend URL here>_
-- **Backend URL:** _<add deployed backend URL here>_
+- **Frontend URL:** https://mini-job-queue-one.vercel.app
+- **Backend URL:** https://mini-job-queue-backend.vercel.app
 
 ## Screenshots
 
